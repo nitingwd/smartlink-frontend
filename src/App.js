@@ -1,39 +1,39 @@
-import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import Login from "./pages/Login";
+import Analytics from "./pages/Analytics";
 
 function App() {
+  const [token, setToken] = useState(localStorage.getItem("token"));
+
+  // Optional: Sync token if localStorage changes externally
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setToken(localStorage.getItem("token"));
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
-      {/* Navbar */}
-      <header className="bg-white shadow-md">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-indigo-600">SmartLink</h1>
-          <nav className="space-x-6">
-            <a href="#features" className="hover:text-indigo-500">Features</a>
-            <a href="#dashboard" className="hover:text-indigo-500">Dashboard</a>
-            <a href="#contact" className="hover:text-indigo-500">Contact</a>
-          </nav>
-        </div>
-      </header>
+    <Router>
+      <Routes>
+        {/* Public Login Route */}
+        <Route path="/login" element={<Login setToken={setToken} />} />
 
-      {/* Hero Section */}
-      <main className="flex flex-col items-center justify-center text-center py-20 px-4">
-        <h2 className="text-4xl font-bold mb-4 text-indigo-700">Welcome to SmartLink 🚀</h2>
-        <p className="text-lg max-w-xl mb-6">
-          Your smart dashboard for managing and sharing links with ease.
-        </p>
-        <a
-          href="/dashboard"
-          className="bg-indigo-600 text-white px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition"
-        >
-          Go to Dashboard
-        </a>
-      </main>
+        {/* Protected Analytics Route */}
+        <Route
+          path="/analytics"
+          element={token ? <Analytics /> : <Navigate to="/login" />}
+        />
 
-      {/* Footer */}
-      <footer className="bg-white border-t mt-20 py-6 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} SmartLink. All rights reserved.
-      </footer>
-    </div>
+        {/* Default Redirect */}
+        <Route path="/" element={<Navigate to="/login" />} />
+
+        {/* Catch-all for unknown routes */}
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+    </Router>
   );
 }
 
